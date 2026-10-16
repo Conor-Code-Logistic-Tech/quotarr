@@ -1,0 +1,28 @@
+# Put PLEX_TOKEN (and any overrides) in a .env file next to this one; see .env.example.
+services:
+  quotarr:
+    build: .
+    image: quotarr:latest
+    container_name: quotarr
+    restart: unless-stopped
+    ports:
+      - "6464:6464"
+    extra_hosts:
+      # Plex runs with host networking on the same box, so it is reachable at the host gateway.
+      - "host.docker.internal:host-gateway"
+    environment:
+      PLEX_URL: ${PLEX_URL:-http://host.docker.internal:32400}
+      PLEX_TOKEN: ${PLEX_TOKEN:?Set PLEX_TOKEN in .env}
+      AUTO_INDEX_SHOWS: ${AUTO_INDEX_SHOWS:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      PREGENERATE_THUMBS: ${PREGENERATE_THUMBS:-false}
+      CACHE_MAX_MB: ${CACHE_MAX_MB:-2048}
+      SUBTITLE_LANGUAGES: ${SUBTITLE_LANGUAGES:-eng,en}
+      PUID: ${PUID:-99}
+      PGID: ${PGID:-100}
+    volumes:
+      - ${CONFIG_DIR:-/mnt/user/Docker/Quotarr}:/config
+      # Same mapping as the Plex container, so Plex's file paths work here as-is.
+      # Optional: without it frames are streamed from Plex over HTTP (slower).
+      - ${MEDIA_DIR:-/mnt/user/Media}:/data:ro
